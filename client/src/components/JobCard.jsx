@@ -149,17 +149,33 @@ export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmar
           <span className={`tier-badge ${TIER_CLASS[job.location_tier] || 'tier-other'}`}>
             {job.location_tier_label || (job.remote ? 'Remote' : 'On-site')}
           </span>
-          <button
-            type="button"
-            className={`bookmark-btn ${bookmarked ? 'active' : ''}`}
-            title={bookmarked ? 'Remove from saved jobs' : 'Save this job'}
-            onClick={(e) => {
-              e.stopPropagation();
-              onBookmark(job);
-            }}
-          >
-            {bookmarked ? '★' : '☆'}
-          </button>
+          <div className="card-top-actions">
+            <button
+              type="button"
+              className={`bookmark-btn ${bookmarked ? 'active' : ''}`}
+              title={bookmarked ? 'Remove from saved jobs' : 'Save this job'}
+              onClick={(e) => {
+                e.stopPropagation();
+                onBookmark(job);
+              }}
+            >
+              {bookmarked ? '★' : '☆'}
+            </button>
+            {expanded && (
+              <button
+                type="button"
+                className="close-btn"
+                title="Collapse"
+                aria-label="Collapse job details"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggle();
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
         <h3 className="job-title">{job.title}</h3>
         <div className="job-meta">

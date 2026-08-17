@@ -497,6 +497,28 @@ body {
   color: #475569;
 }
 
+.card-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-soft);
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.close-btn:hover {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+}
+
 .bookmark-btn {
   background: none;
   border: none;
