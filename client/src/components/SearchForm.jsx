@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import MultiSelect from './MultiSelect.jsx';
 
 // Fallbacks while GET /api/filters loads (server list includes all Bdjobs
@@ -5,9 +6,7 @@ import MultiSelect from './MultiSelect.jsx';
 export const DEFAULT_FIELD_GROUPS = [
   { label: '', options: ['CSE', 'EEE', 'IT', 'Data Analysis', 'Economics', 'Other'] },
 ];
-export const DEFAULT_ROLE_GROUPS = [
-  { label: '', options: ['Manager', 'Junior Frontend Developer', 'Trainee/Intern', 'Other'] },
-];
+export const DEFAULT_ROLE_GROUPS = [{ label: '', options: ['Other'] }];
 export const DEFAULT_LEVEL_OPTIONS = ['Entry', 'Mid', 'Top'];
 
 export const EMPTY_FILTERS = {
@@ -24,8 +23,31 @@ export const EMPTY_FILTERS = {
   salaryMax: '',
 };
 
-export default function SearchForm({ filters, onChange, onSearch, loading, fieldGroups, roleGroups, levelOptions }) {
+export default function SearchForm({ filters, onChange, onSearch, loading, fieldGroups, roleGroups, levelOptions, fieldRoles }) {
   const set = (patch) => onChange({ ...filters, ...patch });
+
+  // The Role dropdown adapts to the selected fields: a "Suggested" group of
+  // field-specific roles comes first, the full catalog stays below it.
+  const dynamicRoleGroups = useMemo(() => {
+    const base = roleGroups || DEFAULT_ROLE_GROUPS;
+    const selected = (filters.fields || []).filter((f) => f !== 'Other');
+    const suggested = [...new Set(selected.flatMap((f) => fieldRoles?.[f] || []))];
+    if (!suggested.length) return base;
+    const inSuggested = new Set(suggested);
+    const rest = base
+      .map((g) => ({ ...g, options: g.options.filter((o) => !inSuggested.has(o)) }))
+      .filter((g) => g.options.length);
+    return [{ label: 'Suggested for your fields', options: suggested }, ...rest];
+  }, [filters.fields, roleGroups, fieldRoles]);
+
+  // When fields change, drop selected roles that are no longer offered.
+  const setFields = (fields) => {
+    const selected = fields.filter((f) => f !== 'Other');
+    const suggested = new Set(selected.flatMap((f) => fieldRoles?.[f] || []));
+    const catalog = new Set((roleGroups || DEFAULT_ROLE_GROUPS).flatMap((g) => g.options));
+    const roles = (filters.roles || []).filter((r) => catalog.has(r) || suggested.has(r));
+    set({ fields, roles });
+  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -41,7 +63,7 @@ export default function SearchForm({ filters, onChange, onSearch, loading, field
             label="field"
             groups={fieldGroups || DEFAULT_FIELD_GROUPS}
             values={filters.fields}
-            onChange={(fields) => set({ fields })}
+            onChange={setFields}
           />
           {filters.fields.includes('Other') && (
             <input
@@ -57,7 +79,7 @@ export default function SearchForm({ filters, onChange, onSearch, loading, field
           <label>Role</label>
           <MultiSelect
             label="role"
-            groups={roleGroups || DEFAULT_ROLE_GROUPS}
+            groups={dynamicRoleGroups}
             values={filters.roles}
             onChange={(roles) => set({ roles })}
           />

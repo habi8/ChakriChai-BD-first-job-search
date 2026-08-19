@@ -63,6 +63,35 @@ const ROLE_TERMS = {
   Manager: ['manager', 'management', 'head of', 'lead ', 'team lead', 'supervisor'],
   'Junior Frontend Developer': ['junior frontend', 'frontend developer', 'front-end', 'front end', 'react', 'vue', 'angular', 'ui developer', 'web developer', 'junior developer'],
   'Trainee/Intern': ['intern', 'internship', 'trainee', 'apprentice', 'entry level', 'entry-level', 'fresher', 'graduate'],
+  // Field-suggested roles (FIELD_ROLE_MAP in bdcategories.js). Roles without
+  // an entry here match on their own name via generatedTerms().
+  'Software Engineer': ['software engineer', 'software developer', 'sde', 'software development'],
+  'Frontend Developer': ['frontend', 'front-end', 'front end', 'react', 'vue', 'angular', 'ui developer'],
+  'Backend Developer': ['backend', 'back-end', 'back end', 'node', 'django', 'laravel', 'spring boot', 'api developer'],
+  'Full Stack Developer': ['full stack', 'fullstack', 'mern', 'mean stack'],
+  'Mobile App Developer': ['mobile app', 'android', 'ios', 'flutter', 'react native'],
+  'Web Developer': ['web developer', 'web development', 'wordpress', 'php developer'],
+  'DevOps Engineer': ['devops', 'sre', 'site reliability', 'platform engineer'],
+  'QA/Test Engineer': ['qa', 'sqa', 'quality assurance', 'test engineer', 'tester', 'automation test'],
+  'Data Engineer': ['data engineer', 'etl', 'data pipeline'],
+  'Machine Learning Engineer': ['machine learning', 'ml engineer', ' ai ', 'deep learning'],
+  'Data Analyst': ['data analyst', 'data analysis', 'analytics'],
+  'Business Analyst': ['business analyst'],
+  'Data Scientist': ['data scientist', 'data science'],
+  'BI Analyst': ['business intelligence', ' bi ', 'power bi', 'tableau'],
+  'System Administrator': ['system admin', 'sysadmin', 'systems administrator'],
+  'Network Engineer': ['network engineer', 'network admin', 'network administrator'],
+  'Database Administrator': ['database administrator', 'database admin', ' dba '],
+  'IT Support Engineer': ['it support', 'support engineer', 'helpdesk', 'technical support'],
+  'Cyber Security Analyst': ['cyber security', 'security analyst', 'information security', 'soc analyst'],
+  'Cloud Engineer': ['cloud engineer', 'aws', 'azure', 'gcp'],
+  'UI/UX Designer': ['ui/ux', 'ui designer', 'ux designer', 'product designer'],
+  'Customer Service Representative': ['customer service', 'customer care', 'customer support'],
+  'Call Centre Agent': ['call centre', 'call center'],
+  'Content Writer': ['content writer', 'content writing', 'copywriter'],
+  'Digital Marketing Executive': ['digital marketing', 'digital marketer'],
+  'SEO Specialist': ['seo'],
+  'Social Media Manager': ['social media'],
 };
 
 // Seniority-level hints (Entry/Mid/Top, mirroring Bdjobs' Job Level filter).
@@ -262,7 +291,11 @@ export function primaryKeyword(filters) {
   if (kw) return kw.split(/[,;]/)[0].trim();
   if (filters.roleOther?.trim()) return filters.roleOther.trim();
   const ROLE_KW = { Manager: 'manager', 'Junior Frontend Developer': 'frontend developer', 'Trainee/Intern': 'intern' };
-  for (const r of filters.roles || []) if (ROLE_KW[r]) return ROLE_KW[r];
+  for (const r of filters.roles || []) {
+    if (r === 'Other') continue;
+    if (ROLE_KW[r]) return ROLE_KW[r];
+    return r.replace(/\//g, ' '); // e.g. "QA/Test Engineer" → "QA Test Engineer"
+  }
   if (filters.fieldOther?.trim()) return filters.fieldOther.trim();
   const FIELD_KW = { CSE: 'software engineer', EEE: 'electrical engineer', IT: 'IT', 'Data Analysis': 'data analyst', Economics: 'economist' };
   for (const f of filters.fields || []) {

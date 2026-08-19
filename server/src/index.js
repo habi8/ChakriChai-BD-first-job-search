@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runSearch } from './search.js';
 import { sourceById } from './sources/index.js';
-import { FIELD_GROUPS, ROLE_GROUPS, LEVEL_OPTIONS } from './bdcategories.js';
+import { FIELD_GROUPS, ROLE_GROUPS, LEVEL_OPTIONS, FIELD_ROLE_MAP } from './bdcategories.js';
 import { resolveCareerPage } from './careerpage.js';
 import { withTimeout } from './util/http.js';
 
@@ -29,7 +29,14 @@ app.get('/api/health', (_req, res) => {
 // Dropdown options for the search form — single source of truth for the
 // field/role lists (Bdjobs categories live in bdcategories.js).
 app.get('/api/filters', (_req, res) => {
-  res.json({ fieldGroups: FIELD_GROUPS, roleGroups: ROLE_GROUPS, levels: LEVEL_OPTIONS });
+  res.json({
+    fieldGroups: FIELD_GROUPS,
+    roleGroups: ROLE_GROUPS,
+    levels: LEVEL_OPTIONS,
+    // field label -> suggested roles; the client rebuilds the Role dropdown
+    // from this whenever the selected fields change.
+    fieldRoles: FIELD_ROLE_MAP,
+  });
 });
 
 app.post('/api/search', async (req, res) => {

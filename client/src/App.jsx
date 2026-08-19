@@ -134,6 +134,7 @@ export default function App() {
               fieldGroups={filterOptions?.fieldGroups}
               roleGroups={filterOptions?.roleGroups}
               levelOptions={filterOptions?.levels}
+              fieldRoles={filterOptions?.fieldRoles}
             />
 
             {cachedAt && !loading && (

@@ -84,17 +84,47 @@ export const FIELD_GROUPS = [
   { label: '', options: ['Other'] },
 ];
 
-// The Role dropdown: a few common picks plus Bdjobs' own designation taxonomy
-// (their "special skilled category" list — the closest thing Bdjobs has to
-// roles, and each doubles as a precise category id for their search API).
+// The Role dropdown: Bdjobs' own designation taxonomy (their "special skilled
+// category" list — each doubles as a precise category id for their search
+// API). Field-specific roles are suggested dynamically via FIELD_ROLE_MAP.
 export const ROLE_GROUPS = [
-  { label: 'Common', options: ['Manager', 'Junior Frontend Developer', 'Trainee/Intern'] },
   { label: 'Bdjobs designations', options: BD_SKILLED.map((c) => c.label) },
   { label: '', options: ['Other'] },
 ];
 
 // The Level dropdown mirrors Bdjobs' Job Level filter exactly.
 export const LEVEL_OPTIONS = ['Entry', 'Mid', 'Top'];
+
+// Field-specific role suggestions: when the user picks a field, the Role
+// dropdown surfaces these first. Curated for the big fields; every other
+// Bdjobs category falls back to the generic BD job ladder.
+const GENERIC_ROLES = ['Officer', 'Executive', 'Senior Executive', 'Assistant Manager', 'Manager', 'Trainee/Intern'];
+
+export const FIELD_ROLE_MAP = {
+  CSE: ['Software Engineer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Mobile App Developer', 'Web Developer', 'DevOps Engineer', 'QA/Test Engineer', 'Data Engineer', 'Machine Learning Engineer', 'Trainee/Intern'],
+  IT: ['IT Officer', 'System Administrator', 'Network Engineer', 'IT Support Engineer', 'Database Administrator', 'Cyber Security Analyst', 'Cloud Engineer', 'IT Manager', 'Trainee/Intern'],
+  EEE: ['Electrical Engineer', 'Electronics Engineer', 'Power Engineer', 'Embedded Systems Engineer', 'Hardware Engineer', 'Maintenance Engineer', 'Instrumentation Engineer', 'Trainee/Intern'],
+  'Data Analysis': ['Data Analyst', 'Business Analyst', 'Data Scientist', 'BI Analyst', 'Research Analyst', 'Statistician', 'Trainee/Intern'],
+  Economics: ['Economist', 'Research Analyst', 'Policy Analyst', 'Investment Analyst', 'Market Research Analyst', 'Trainee/Intern'],
+  'IT/Telecommunication': ['Software Engineer', 'Web Developer', 'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Mobile App Developer', 'System Administrator', 'Network Engineer', 'Database Administrator', 'IT Support Engineer', 'Trainee/Intern'],
+  'Accounting/Finance': ['Accountant', 'Accounts Officer', 'Finance Executive', 'Auditor', 'Tax Consultant', 'Finance Manager', 'Chief Financial Officer', 'Trainee/Intern'],
+  'Bank/Non-Bank Fin. Institution': ['Trainee Officer', 'Bank Officer', 'Credit Analyst', 'Loan Officer', 'Relationship Manager', 'Branch Manager'],
+  'Marketing/Sales': ['Marketing Executive', 'Sales Executive', 'Business Development Executive', 'Brand Manager', 'Marketing Manager', 'Sales Manager', 'Territory Manager', 'Trainee/Intern'],
+  'Design/Creative': ['Graphic Designer', 'UI/UX Designer', 'Motion Designer', 'Illustrator', 'Video Editor', 'Creative Director', 'Trainee/Intern'],
+  'HR/Org. Development': ['HR Officer', 'HR Executive', 'Recruitment Specialist', 'Payroll Officer', 'HR Manager', 'Trainee/Intern'],
+  'Education/Training': ['Teacher', 'Lecturer', 'Professor', 'Trainer', 'Academic Coordinator', 'Curriculum Specialist'],
+  'Engineer/Architect': ['Civil Engineer', 'Mechanical Engineer', 'Electrical Engineer', 'Site Engineer', 'Project Engineer', 'Structural Engineer', 'Architect', 'Trainee/Intern'],
+  'Garments/Textile': ['Merchandiser', 'Production Officer', 'Quality Controller', 'Textile Engineer', 'Compliance Officer', 'Pattern Master'],
+  'Healthcare/Medical': ['Medical Officer', 'Doctor', 'Nurse', 'Pharmacist', 'Lab Technician', 'Physiotherapist'],
+  'NGO/Development': ['Program Officer', 'Field Officer', 'Project Coordinator', 'M&E Officer', 'Community Mobilizer', 'Program Manager'],
+  'Customer Service/Call Centre': ['Customer Service Representative', 'Call Centre Agent', 'Customer Support Executive', 'Team Leader'],
+  'E-commerce/Digital Marketing': ['Digital Marketing Executive', 'SEO Specialist', 'Social Media Manager', 'Content Writer', 'E-commerce Executive', 'Performance Marketing Specialist'],
+  'Supply Chain/Procurement': ['Supply Chain Officer', 'Procurement Officer', 'Logistics Executive', 'Warehouse In-Charge', 'Supply Chain Manager'],
+  'Media/Advertisement/Event Mgt.': ['Content Writer', 'Copywriter', 'Journalist', 'Video Editor', 'Event Coordinator', 'Media Executive'],
+};
+for (const c of BD_PROFESSIONAL) {
+  if (!FIELD_ROLE_MAP[c.label]) FIELD_ROLE_MAP[c.label] = GENERIC_ROLES;
+}
 
 // Bdjobs GetJobSearch accepts a single jobLevel value: Entry | Mid | Top.
 export function bdJobLevelFor(levels = []) {
