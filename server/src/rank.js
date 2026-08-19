@@ -175,11 +175,27 @@ function parseSalaryNumbers(s) {
   return nums.filter((n) => n > 0);
 }
 
+// Renamed districts still appear under old spellings in many postings.
+const DISTRICT_ALIASES = {
+  chattogram: ['chittagong'],
+  barishal: ['barisal'],
+  bogura: ['bogra'],
+  cumilla: ['comilla'],
+  jashore: ['jessore'],
+  chapainawabganj: ['nawabganj'],
+};
+
+function districtMatches(jobLocation, districts) {
+  const loc = norm(jobLocation);
+  return districts.some((d) => loc.includes(d) || (DISTRICT_ALIASES[d] || []).some((a) => loc.includes(a)));
+}
+
 // Mutates nothing; returns filtered + ranked copy with _score/_tier annotations.
 export function rankJobs(jobs, filters) {
   const groups = collectTermGroups(filters);
-  const wantLoc = (filters.location || '').trim().toLowerCase();
-  const wantRemote = wantLoc === 'remote';
+  const selectedLocations = filters.locations || [];
+  const wantRemote = selectedLocations.includes('Remote');
+  const wantDistricts = selectedLocations.filter((l) => l !== 'Remote').map((l) => l.toLowerCase());
   const exp = EXP_HINTS[filters.experience] || null;
   const now = Date.now();
 
@@ -233,11 +249,14 @@ export function rankJobs(jobs, filters) {
 
     if (filters.jobType && !job.job_type) score -= 5; // unknown type: keep, demote a bit
 
-    if (wantLoc && !wantRemote) {
-      if (norm(job.location).includes(wantLoc)) score += 25;
-    } else if (wantRemote) {
-      score += tier >= 2 && tier <= 3 ? 15 : job.remote ? 10 : -10;
+    if (wantDistricts.length && tier === 4) {
+      // District filter is hard for Bangladesh-located jobs — but postings
+      // that say "Anywhere in Bangladesh" qualify for every district.
+      const anywhere = norm(job.location).includes('anywhere');
+      if (districtMatches(job.location, wantDistricts)) score += 20;
+      else if (!anywhere) continue;
     }
+    if (wantRemote) score += tier === 3 ? 15 : tier === 2 ? 10 : 0;
 
     if (exp) {
       if (anyMatch(text, exp.boost)) score += 10;
@@ -274,11 +293,12 @@ export function rankJobs(jobs, filters) {
 
   // Location tier is the primary sort key: Bangladesh jobs always come before
   // BD-friendly remote, which come before the rest — text relevance only
-  // orders jobs *within* a tier. (Exception: an explicit "remote" location
-  // search keeps pure score order, where remote jobs already get the boost.)
+  // orders jobs *within* a tier. (Exception: selecting only "Remote" keeps
+  // pure score order, where remote jobs already carry the boost.)
+  const remoteOnly = wantRemote && !wantDistricts.length;
   scored.sort(
     (a, b) =>
-      (wantRemote ? 0 : b.location_tier - a.location_tier) ||
+      (remoteOnly ? 0 : b.location_tier - a.location_tier) ||
       b._score - a._score ||
       String(b.posted_date).localeCompare(String(a.posted_date))
   );

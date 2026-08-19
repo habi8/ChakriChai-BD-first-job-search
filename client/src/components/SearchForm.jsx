@@ -8,6 +8,10 @@ export const DEFAULT_FIELD_GROUPS = [
 ];
 export const DEFAULT_ROLE_GROUPS = [{ label: '', options: ['Other'] }];
 export const DEFAULT_LEVEL_OPTIONS = ['Entry', 'Mid', 'Top'];
+export const DEFAULT_LOCATION_GROUPS = [
+  { label: '', options: ['Remote'] },
+  { label: 'Districts', options: ['Dhaka', 'Chattogram', 'Sylhet', 'Khulna', 'Rajshahi', 'Barishal', 'Rangpur', 'Mymensingh'] },
+];
 
 export const EMPTY_FILTERS = {
   fields: [],
@@ -15,7 +19,7 @@ export const EMPTY_FILTERS = {
   roles: [],
   roleOther: '',
   levels: [],
-  location: '',
+  locations: [],
   experience: '',
   jobType: '',
   keywords: '',
@@ -23,7 +27,7 @@ export const EMPTY_FILTERS = {
   salaryMax: '',
 };
 
-export default function SearchForm({ filters, onChange, onSearch, loading, fieldGroups, roleGroups, levelOptions, fieldRoles }) {
+export default function SearchForm({ filters, onChange, onSearch, loading, fieldGroups, roleGroups, levelOptions, fieldRoles, locationGroups }) {
   const set = (patch) => onChange({ ...filters, ...patch });
 
   // The Role dropdown adapts to the selected fields: a "Suggested" group of
@@ -105,11 +109,11 @@ export default function SearchForm({ filters, onChange, onSearch, loading, field
 
         <div className="form-field">
           <label>Location</label>
-          <input
-            type="text"
-            placeholder="e.g. Dhaka, or “remote”"
-            value={filters.location}
-            onChange={(e) => set({ location: e.target.value })}
+          <MultiSelect
+            label="location"
+            groups={locationGroups || DEFAULT_LOCATION_GROUPS}
+            values={filters.locations || []}
+            onChange={(locations) => set({ locations })}
           />
         </div>
 

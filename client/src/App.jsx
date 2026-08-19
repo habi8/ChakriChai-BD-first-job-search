@@ -25,6 +25,13 @@ function normalizeFilters(f) {
     out.levels = [...new Set([...(out.levels || []), ...migrated])];
     out.roles = out.roles.filter((r) => !LEVEL_MAP[r]);
   }
+  // Location was free text before it became a dropdown — migrate what we can.
+  if (typeof f.location === 'string' && f.location.trim() && !(out.locations || []).length) {
+    const loc = f.location.trim().toLowerCase();
+    if (loc === 'remote') out.locations = ['Remote'];
+    else out.locations = [f.location.trim().replace(/^./, (c) => c.toUpperCase())];
+  }
+  delete out.location;
   return out;
 }
 
@@ -135,6 +142,7 @@ export default function App() {
               roleGroups={filterOptions?.roleGroups}
               levelOptions={filterOptions?.levels}
               fieldRoles={filterOptions?.fieldRoles}
+              locationGroups={filterOptions?.locationGroups}
             />
 
             {cachedAt && !loading && (

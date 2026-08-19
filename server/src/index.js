@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runSearch } from './search.js';
 import { sourceById } from './sources/index.js';
-import { FIELD_GROUPS, ROLE_GROUPS, LEVEL_OPTIONS, FIELD_ROLE_MAP } from './bdcategories.js';
+import { FIELD_GROUPS, ROLE_GROUPS, LEVEL_OPTIONS, FIELD_ROLE_MAP, LOCATION_GROUPS } from './bdcategories.js';
 import { resolveCareerPage } from './careerpage.js';
 import { withTimeout } from './util/http.js';
 
@@ -36,6 +36,7 @@ app.get('/api/filters', (_req, res) => {
     // field label -> suggested roles; the client rebuilds the Role dropdown
     // from this whenever the selected fields change.
     fieldRoles: FIELD_ROLE_MAP,
+    locationGroups: LOCATION_GROUPS,
   });
 });
 
@@ -47,7 +48,7 @@ app.post('/api/search', async (req, res) => {
     roles: Array.isArray(f.roles) ? f.roles.slice(0, 15) : [],
     roleOther: String(f.roleOther || '').slice(0, 100),
     levels: Array.isArray(f.levels) ? f.levels.filter((l) => LEVEL_OPTIONS.includes(l)) : [],
-    location: String(f.location || '').slice(0, 100),
+    locations: Array.isArray(f.locations) ? f.locations.map((l) => String(l).slice(0, 40)).slice(0, 10) : [],
     experience: ['0-1', '1-3', '3-5', '5+'].includes(f.experience) ? f.experience : '',
     jobType: ['full_time', 'part_time', 'contract', 'internship'].includes(f.jobType) ? f.jobType : '',
     keywords: String(f.keywords || '').slice(0, 200),
