@@ -7,7 +7,7 @@ const TIER_CLASS = { 4: 'tier-bd', 3: 'tier-open', 2: 'tier-remote', 1: 'tier-lo
 // apply URL > company website > CV email) over the job board. Greenhouse and
 // Lever links already ARE the company's hosted careers page. The original
 // posting always stays reachable as a reference link.
-function ApplyActions({ job, detail, careers, onCollapse }) {
+function ApplyActions({ job, detail, careers, onCollapse, bookmarked, onBookmark }) {
   const stop = (e) => e.stopPropagation();
   const d = detail || {};
   const c = careers || {};
@@ -55,6 +55,16 @@ function ApplyActions({ job, detail, careers, onCollapse }) {
           View original posting on {sourceLabel} ↗
         </a>
       )}
+      <button
+        type="button"
+        className={`btn-ghost btn-save ${bookmarked ? 'saved' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onBookmark(job);
+        }}
+      >
+        {bookmarked ? '★ Saved' : '☆ Save job'}
+      </button>
       <button type="button" className="btn-ghost" onClick={onCollapse}>
         Collapse
       </button>
@@ -208,7 +218,14 @@ export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmar
           ) : (
             descState === 'idle' && job.snippet && <p>{job.snippet}</p>
           )}
-          <ApplyActions job={job} detail={detail} careers={careers} onCollapse={handleToggle} />
+          <ApplyActions
+            job={job}
+            detail={detail}
+            careers={careers}
+            onCollapse={handleToggle}
+            bookmarked={bookmarked}
+            onBookmark={onBookmark}
+          />
         </div>
       )}
     </article>

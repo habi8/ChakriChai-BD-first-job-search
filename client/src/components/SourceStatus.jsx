@@ -19,6 +19,12 @@ export default function SourceStatus({ sources }) {
           the remaining sources.
         </p>
       )}
+      {sources.some((s) => s.id === 'bdjobs' && s.ok && s.count === 0) && (
+        <p className="source-warning">
+          Bdjobs matched 0 local jobs for this search — its API occasionally returns an empty
+          batch. Hit <strong>Search jobs</strong> again, or broaden your filters.
+        </p>
+      )}
     </div>
   );
 }

@@ -76,6 +76,11 @@ export async function search({ keyword, filters }) {
   }
   if (categories.length || keyword) attempts.push([{ keyword, jobLevel: '', rpp: 50, fieldLabel: '' }]);
 
+  // The final entry re-runs the precise query once more: Bdjobs occasionally
+  // answers a transient empty batch, and empty responses are evicted from the
+  // memo, so this retry is a genuinely fresh fetch.
+  attempts.push(attempts[0]);
+
   let settled = [];
   let queries = [];
   for (const attempt of attempts) {

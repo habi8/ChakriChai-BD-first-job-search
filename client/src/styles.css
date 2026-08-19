@@ -522,10 +522,10 @@ body {
 .bookmark-btn {
   background: none;
   border: none;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   line-height: 1;
   cursor: pointer;
-  color: #e7d5c1;
+  color: #78716c;
   padding: 2px 4px;
 }
 
@@ -649,6 +649,11 @@ body {
   align-items: center;
   flex-wrap: wrap;
   margin-top: 18px;
+}
+
+.btn-save.saved {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .careers-hint {
