@@ -1,18 +1,18 @@
 :root {
-  --bg: #fff7ed;
+  --bg: #f0f9ff;
   --surface: #ffffff;
   --border: #6b7280;
   --border-soft: #d1d5db;
-  --text: #27221c;
-  --text-soft: #78716c;
-  --brand: #f97316;
-  --brand-strong: #ea580c;
-  --brand-soft: #ffedd5;
+  --text: #1f2937;
+  --text-soft: #64748b;
+  --brand: #0ea5e9;
+  --brand-strong: #0284c7;
+  --brand-soft: #e0f2fe;
   --accent: #d97706;
   --danger: #b91c1c;
   --radius: 12px;
-  --shadow: 0 1px 3px rgb(154 82 18 / 0.08), 0 1px 2px rgb(154 82 18 / 0.06);
-  --shadow-lift: 0 8px 24px rgb(154 82 18 / 0.16);
+  --shadow: 0 1px 3px rgb(15 23 42 / 0.08), 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-lift: 0 8px 24px rgb(15 23 42 / 0.14);
 }
 
 * {
@@ -35,7 +35,7 @@ body {
 
 /* ---------- header ---------- */
 .app-header {
-  background: #ea580c;
+  background: #0284c7;
   color: #fff;
   padding: 20px 16px;
 }
@@ -57,7 +57,7 @@ body {
 }
 
 .brand h1 span {
-  color: #ffedd5;
+  color: #bae6fd;
 }
 
 .tagline {
@@ -284,7 +284,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #c2410c;
+  color: #0369a1;
   padding: 8px 10px 4px;
   position: sticky;
   top: 0;
@@ -410,7 +410,7 @@ body {
 
 .cache-note {
   font-size: 0.88rem;
-  color: #9a3412;
+  color: #075985;
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: 8px;
@@ -525,7 +525,7 @@ body {
   font-size: 1.45rem;
   line-height: 1;
   cursor: pointer;
-  color: #78716c;
+  color: #64748b;
   padding: 2px 4px;
 }
 
@@ -569,7 +569,7 @@ body {
 
 .chip {
   background: var(--brand-soft);
-  color: #9a3412;
+  color: #075985;
   border-radius: 999px;
   padding: 2px 10px;
 }
@@ -592,7 +592,7 @@ body {
 .card-source {
   margin-top: 10px;
   font-size: 0.76rem;
-  color: #b3a597;
+  color: #94a3b8;
 }
 
 .card-source strong {
@@ -603,7 +603,7 @@ body {
 .card-detail {
   border-top: 2px solid var(--border-soft);
   padding: 16px 20px 20px;
-  background: #fffaf4;
+  background: #f7fbfe;
 }
 
 .job-description {
@@ -731,7 +731,7 @@ body {
 
 .sk-line,
 .sk-block {
-  background: #ece4da;
+  background: #dfeaf2;
   animation: pulse 1.3s ease-in-out infinite;
   border-radius: 6px;
   height: 13px;
@@ -762,7 +762,7 @@ body {
   max-width: 1120px;
   margin: 0 auto;
   font-size: 0.78rem;
-  color: #b3a597;
+  color: #94a3b8;
 }
 
 /* ---------- responsive ---------- */
