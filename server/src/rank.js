@@ -170,6 +170,39 @@ const EXP_HINTS = {
   '5+': { boost: ['senior', 'lead', 'principal', 'staff ', 'manager', 'head of', 'director'], penalty: ['intern', 'trainee', 'junior', 'fresher'] },
 };
 
+// Seniority inferred from the job title, for the "Top jobs" browse view.
+// Scraped career-page jobs carry no structured level field, but titles are
+// reliable enough to order by: 6 = C-level … 0 = intern.
+const SENIORITY_RULES = [
+  [6, /\b(chief|cto|ceo|cfo|coo|vp|vice president)\b/i],
+  [5, /\b(head of|director|principal)\b/i],
+  [4, /\b(lead|manager|architect)\b/i],
+  [3, /\b(senior|sr\.?|specialist|consultant)\b/i],
+  [1, /\b(junior|jr\.?|associate|assistant)\b/i],
+  [0, /\b(intern|internship|trainee|apprentice|fresher|graduate)\b/i],
+];
+
+export function seniorityRank(title = '') {
+  for (const [rank, rx] of SENIORITY_RULES) if (rx.test(title)) return rank;
+  return 2; // unmarked titles read as mid-level
+}
+
+export const SENIORITY_LABEL = {
+  6: 'C-level',
+  5: 'Principal / Director',
+  4: 'Lead / Manager',
+  3: 'Senior',
+  2: 'Mid level',
+  1: 'Junior',
+  0: 'Intern / Trainee',
+};
+
+// Highest number found in a salary string, for sorting. 0 = unknown.
+export function salaryValue(salary = '') {
+  const nums = parseSalaryNumbers(salary);
+  return nums.length ? Math.max(...nums) : 0;
+}
+
 function parseSalaryNumbers(s) {
   const nums = (String(s).match(/\d[\d,]*/g) || []).map((n) => Number(n.replace(/,/g, '')));
   return nums.filter((n) => n > 0);

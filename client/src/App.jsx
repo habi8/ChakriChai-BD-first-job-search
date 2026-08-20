@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import SearchForm, { EMPTY_FILTERS } from './components/SearchForm.jsx';
 import JobCard from './components/JobCard.jsx';
 import SourceStatus from './components/SourceStatus.jsx';
+import TopJobs from './components/TopJobs.jsx';
 import { searchJobs, fetchFilterOptions } from './lib/api.js';
 import {
   getCachedResults,
@@ -50,7 +51,7 @@ export default function App() {
   const [bookmarks, setBookmarks] = useState(() => getBookmarks());
   const [applied, setApplied] = useState(() => getApplied());
   const [showApplied, setShowAppliedState] = useState(() => getShowApplied());
-  const [view, setView] = useState('search'); // 'search' | 'saved'
+  const [view, setView] = useState('search'); // 'search' | 'saved' | 'top'
   const [searched, setSearched] = useState(false);
   const [filterOptions, setFilterOptions] = useState(null); // { fieldGroups, roles }
 
@@ -222,6 +223,17 @@ export default function App() {
               </div>
             )}
 
+            {!loading && (
+              <div className="top-jobs-cta">
+                <button type="button" className="btn-top-jobs" onClick={() => setView('top')}>
+                  ★ View top jobs
+                </button>
+                <span className="top-jobs-cta-note">
+                  Browse everything open right now at top Bangladeshi tech companies
+                </span>
+              </div>
+            )}
+
             {!loading && !searched && (
               <div className="state-box hello-box">
                 <h2>Find your next job</h2>
@@ -264,6 +276,17 @@ export default function App() {
               </>
             )}
           </>
+        )}
+
+        {view === 'top' && (
+          <TopJobs
+            onBack={() => setView('search')}
+            bookmarkedIds={bookmarkedIds}
+            onBookmark={onBookmark}
+            applied={applied}
+            onApplied={onApplied}
+            showApplied={showApplied}
+          />
         )}
 
         {view === 'saved' &&

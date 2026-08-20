@@ -9,6 +9,8 @@ import { sourceById } from './sources/index.js';
 import { FIELD_GROUPS, ROLE_GROUPS, LEVEL_OPTIONS, FIELD_ROLE_MAP, LOCATION_GROUPS } from './bdcategories.js';
 import { resolveCareerPage } from './careerpage.js';
 import { withTimeout } from './util/http.js';
+import * as bdcompanies from './sources/bdcompanies.js';
+import { locationTier, seniorityRank, SENIORITY_LABEL, salaryValue } from './rank.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -77,6 +79,27 @@ app.get('/api/description', async (req, res) => {
     res.json(typeof result === 'string' ? { html: result } : result);
   } catch (err) {
     res.status(502).json({ error: `Could not load the full description: ${err.message}` });
+  }
+});
+
+// "Top jobs": everything currently open at the tracked BD companies, read live
+// from their own careers pages. Annotated with an inferred seniority level and
+// a numeric salary so the client can re-sort without another request.
+app.get('/api/topjobs', async (_req, res) => {
+  try {
+    const jobs = await withTimeout(bdcompanies.search({}), 25000, 'top jobs');
+    const annotated = jobs.map((j) => ({
+      ...j,
+      location_tier: locationTier(j),
+      location_tier_label: 'Bangladesh',
+      seniority: seniorityRank(j.title),
+      seniority_label: SENIORITY_LABEL[seniorityRank(j.title)],
+      salary_value: salaryValue(j.salary),
+    }));
+    res.json({ jobs: annotated, companies: bdcompanies.COMPANY_NAMES, fetchedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('top jobs failed:', err);
+    res.status(502).json({ error: `Could not load top company jobs: ${err.message}` });
   }
 });
 

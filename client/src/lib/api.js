@@ -25,6 +25,14 @@ export async function fetchDescription(source, id) {
   return body;
 }
 
+// Live openings at the tracked BD companies, read from their careers pages.
+export async function fetchTopJobs() {
+  const res = await fetch('/api/topjobs');
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || 'Could not load top company jobs');
+  return body;
+}
+
 // Returns { company_website, career_page } — resolved server-side from the
 // employer's own site.
 export async function fetchCareerPage(source, id) {

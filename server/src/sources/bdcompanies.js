@@ -54,6 +54,9 @@ const COMPANIES = [
 // Dropped after probing (Aug 2026): Enosis Solutions (careers URL answers a
 // 307 redirect loop) and Divine IT (careers URL 404s). Re-add if they change.
 
+// Company names for the "Top jobs" view, so the UI can say whose pages it read.
+export const COMPANY_NAMES = COMPANIES.map((c) => c.company);
+
 // A link's text must look like a job title…
 const JOB_TITLE_RX =
   /\b(engineer|developer|programmer|officer|manager|executive|analyst|designer|intern|trainee|architect|specialist|consultant|administrator|scientist|lead|head of|qa|sqa|devops|tester|writer|accountant|associate|coordinator|technician|marketer|strategist)\b/i;

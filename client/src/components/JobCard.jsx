@@ -93,7 +93,7 @@ const SOURCE_LABEL = {
   adzuna: 'Adzuna',
 };
 
-export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmark, applied, onApplied }) {
+export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmark, applied, onApplied, levelLabel }) {
   // detail: { html, company_website?, apply_email?, apply_url_direct? }
   const [detail, setDetail] = useState(
     job.full_description_html ? { html: job.full_description_html } : null
@@ -172,6 +172,7 @@ export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmar
             <span className={`tier-badge ${TIER_CLASS[job.location_tier] || 'tier-other'}`}>
               {job.location_tier_label || (job.remote ? 'Remote' : 'On-site')}
             </span>
+            {levelLabel && <span className="level-badge">{levelLabel}</span>}
             {applied && <span className="applied-chip">✓ Applied</span>}
           </span>
           <div className="card-top-actions">
