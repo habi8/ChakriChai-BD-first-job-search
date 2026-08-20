@@ -16,7 +16,8 @@ function ApplyActions({ job, detail, careers, onCollapse, bookmarked, onBookmark
   const careerUrl = c.career_page || '';
   const companyUrl = careerUrl || d.apply_url_direct || c.company_website || d.company_website;
   const sourceLabel = SOURCE_LABEL[job.source] || job.source;
-  const isCompanyHosted = job.source === 'greenhouse' || job.source === 'lever';
+  // These sources already link straight at the employer's own careers page.
+  const isCompanyHosted = ['greenhouse', 'lever', 'bdcompanies'].includes(job.source);
 
   let primary;
   if (companyUrl) {
@@ -84,6 +85,7 @@ function ApplyActions({ job, detail, careers, onCollapse, bookmarked, onBookmark
 
 const SOURCE_LABEL = {
   bdjobs: 'Bdjobs.com',
+  bdcompanies: 'Company careers page',
   greenhouse: 'Greenhouse',
   lever: 'Lever',
   remoteok: 'Remote OK',

@@ -21,10 +21,24 @@ open to BD/Asia/Worldwide, then the rest.
 | RemoteOK | Official free JSON API | ✅ safe |
 | Arbeitnow | Official free JSON API | ✅ safe |
 | **Bdjobs.com** | ⚠️ Unofficial reverse-engineered internal API | best-effort; isolated module, degrades gracefully |
+| **BD company career pages** | HTML scraping of top BD tech employers | best-effort; per-company failures are isolated |
 | Adzuna | Official API, free keys required | optional — off unless `ADZUNA_APP_ID`/`ADZUNA_APP_KEY` set |
 
 Company board tokens live in `server/src/sources/greenhouse.js` / `lever.js` — edit
 the lists to add companies (a dead token contributes zero jobs, never an error).
+
+**BD company career pages** (`server/src/sources/bdcompanies.js`): scrapes the careers
+pages of top Bangladeshi tech employers on every search, so jobs posted *only* on a
+company's own site still show up. Three parsers: `easyjobs` and `hrythmic` (Bangladeshi
+ATS platforms with clean server-rendered markup — one parser covers every company hosted
+there) and `generic` (heuristic link scraping, requiring both a job-title-shaped link
+text and a posting-shaped URL). Add companies by appending to the `COMPANIES` registry.
+
+Coverage is inherently uneven and that's expected: some employers render openings with
+JavaScript (invisible to an HTML scraper), some have no current openings, and some block
+automated requests. All three look like "0 jobs" — the source is additive and never fails
+the search. Verified working Aug 2026: Brain Station 23 (16 jobs), Dynamic Solution
+Innovators (4).
 
 **Bdjobs caveat:** `server/src/sources/bdjobs.js` calls the same internal endpoints
 the bdjobs.com web app uses (`api.bdjobs.com/Jobs/api/JobSearch/GetJobSearch` for
