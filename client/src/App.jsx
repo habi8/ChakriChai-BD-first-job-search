@@ -3,6 +3,7 @@ import SearchForm, { EMPTY_FILTERS } from './components/SearchForm.jsx';
 import JobCard from './components/JobCard.jsx';
 import SourceStatus from './components/SourceStatus.jsx';
 import TopJobs from './components/TopJobs.jsx';
+import SplashNotice from './components/SplashNotice.jsx';
 import { searchJobs, fetchFilterOptions } from './lib/api.js';
 import {
   getCachedResults,
@@ -55,6 +56,7 @@ export default function App() {
   const [view, setView] = useState('search'); // 'search' | 'saved' | 'applied' | 'top'
   const [searched, setSearched] = useState(false);
   const [filterOptions, setFilterOptions] = useState(null); // { fieldGroups, roles }
+  const [splash, setSplash] = useState(true);
 
   // Dropdown option lists come from the server (includes all Bdjobs
   // categories); the form falls back to built-in defaults until they arrive.
@@ -134,7 +136,9 @@ export default function App() {
   const legacyAppliedCount = Object.keys(applied).length - appliedJobs.length;
 
   return (
-    <div className="app">
+    <>
+      {splash && <SplashNotice onDone={() => setSplash(false)} />}
+      <div className={`app ${splash ? 'app-blurred' : ''}`} aria-hidden={splash || undefined}>
       <header className="app-header">
         <div className="header-inner">
           <div className="brand">
@@ -370,6 +374,7 @@ export default function App() {
           break without notice. Results cached in your browser for up to 3 hours.
         </p>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
