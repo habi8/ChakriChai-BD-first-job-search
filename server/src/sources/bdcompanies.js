@@ -47,7 +47,7 @@ const COMPANIES = [
   { company: 'BJIT Group', platform: 'generic', url: 'https://bjitgroup.com/career', location: 'Dhaka, Bangladesh' },
   { company: 'LEADS Corporation', platform: 'generic', url: 'https://leads.com.bd/recruitment-steps/', location: 'Dhaka, Bangladesh' },
   { company: 'Augmedix Bangladesh', platform: 'generic', url: 'https://www.augmedix.com/careers', location: 'Dhaka, Bangladesh' },
-  { company: 'Therap BD', platform: 'generic', url: 'https://therapbd.com/careers/', location: 'Dhaka, Bangladesh' },
+  { company: 'Therap Services', platform: 'generic', url: 'https://www.therapservices.net/jobs/', location: 'Dhaka, Bangladesh' },
   { company: 'Nagad', platform: 'generic', url: 'https://nagad.com.bd/career', location: 'Dhaka, Bangladesh' },
   { company: 'bKash', platform: 'generic', url: 'https://www.bkash.com/career', location: 'Dhaka, Bangladesh' },
 ];
@@ -123,24 +123,74 @@ function parseHrythmic($, entry) {
 // scrapes as if it were a job opening.)
 const JOB_HREF_RX = /job|career|vacanc|position|opening|recruit|apply|hiring/i;
 
-// Custom careers page: keep links that read like job titles *and* point at a
-// plausible posting URL.
+// "Ashif Iqbal, Lead Software Engineer" — an employee testimonial byline, not
+// an opening. Reject Name-comma-Title shapes.
+const TESTIMONIAL_RX = /^[A-Z][a-z]+ [A-Z][a-z.]+( [A-Z][a-z.]+)?,\s/;
+
+function isJobTitle(t) {
+  if (!t || t.length < 6 || t.length > 90) return false;
+  if (!JOB_TITLE_RX.test(t) || NOT_A_JOB_RX.test(t)) return false;
+  if (TESTIMONIAL_RX.test(t)) return false;
+  if (t.endsWith('.')) return false; // a sentence, not a title
+  return t.split(' ').length <= 9;
+}
+
+// The text-only fallback has no URL to corroborate it, so it demands a real
+// job-title shape: at least two words ending in a role noun. Without this,
+// service/skill headings scrape as jobs ("DevOps", "QA and Test Automation"
+// on BJIT's page are capability blurbs, not openings).
+const ROLE_NOUN_TAIL_RX =
+  /\b(engineer|engineers|developer|developers|officer|manager|executive|analyst|designer|architect|administrator|specialist|consultant|scientist|lead|intern|trainee|associate|coordinator|technician|writer|accountant)\)?$/i;
+
+// Pages that state outright that nothing is open.
+const NO_OPENINGS_RX =
+  /no (current |open |available )?(vacanc|opening|position)|not (currently )?hiring|check back (later|soon)|no openings? (at the moment|currently|right now)/i;
+
+function isTextOnlyJobTitle(t) {
+  if (!isJobTitle(t)) return false;
+  if (t.split(' ').length < 2) return false;
+  return ROLE_NOUN_TAIL_RX.test(t.replace(/[),.]+$/, ''));
+}
+
+const sameUrl = (a, b) => a.replace(/\/$/, '') === b.replace(/\/$/, '');
+
+// Custom careers page. Two passes, because employers structure these wildly
+// differently:
+//   1. Links to a posting. The title is a heading *inside* the link when there
+//      is one — anchors often wrap the title plus location, type and an "Apply"
+//      label, and using that whole blob as the title fails every length check.
+//   2. Fallback for pages that list openings as plain text with no per-job link
+//      (e.g. Wix-built sites). Those jobs are real, so surface them and point
+//      Apply at the careers page itself rather than inventing a URL.
 function parseGeneric($, entry) {
   const out = [];
+  const seen = new Set();
+  const push = (title, url, viaLink) => {
+    const key = title.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ title, url, location: entry.location, remote: /remote/i.test(title), viaLink });
+  };
+
   $('a[href]').each((_, a) => {
-    const title = cleanText($(a).text());
-    if (!title || title.length < 6 || title.length > 90) return;
-    if (!JOB_TITLE_RX.test(title) || NOT_A_JOB_RX.test(title)) return;
-    // Require a word count typical of a job title, not a sentence.
-    if (title.split(' ').length > 9) return;
-    const href = $(a).attr('href') || '';
-    const url = absUrl(href, entry.url);
-    if (!url || /^mailto:|^tel:/.test(url)) return;
-    if (!JOB_HREF_RX.test(url)) return;
-    // Skip the careers index itself linking back to itself.
-    if (url.replace(/\/$/, '') === entry.url.replace(/\/$/, '')) return;
-    out.push({ title, url, location: entry.location, remote: /remote/i.test(title) });
+    const $a = $(a);
+    const url = absUrl($a.attr('href'), entry.url);
+    if (!url || !JOB_HREF_RX.test(url) || sameUrl(url, entry.url)) return;
+    const heading = $a.find('h1,h2,h3,h4,h5,h6').first();
+    const title = cleanText(heading.length ? heading.text() : $a.text());
+    if (!isJobTitle(title)) return;
+    push(title, url, true);
   });
+
+  if (!out.length && !NO_OPENINGS_RX.test(cleanText($('body').text()))) {
+    $('h1,h2,h3,h4,h5,h6,span,p,li,strong,div').each((_, el) => {
+      const $el = $(el);
+      if ($el.children().length) return; // leaf text nodes only
+      const title = cleanText($el.text());
+      if (!isTextOnlyJobTitle(title)) return;
+      push(title, entry.url, false);
+    });
+  }
   return out;
 }
 
@@ -166,7 +216,9 @@ async function scrapeCompany(entry) {
       // Career pages rarely publish a machine-readable posted date; leaving it
       // null is honest — ranking just skips the freshness bonus.
       postedDate: null,
-      descriptionHtml: `<p>Open position at ${entry.company}. Full details are on the company's careers page.</p>`,
+      descriptionHtml: p.viaLink === false
+        ? `<p>Open position at ${entry.company}, listed on their careers page. That page doesn't link each opening separately, so Apply opens the careers page — look for this role there.</p>`
+        : `<p>Open position at ${entry.company}. Full details are on the company's careers page.</p>`,
       applyUrl: p.url,
       remote: p.remote,
       tags: ['bangladesh', 'company career page'],

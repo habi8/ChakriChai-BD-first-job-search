@@ -82,17 +82,28 @@ export const setLastFilters = (filters) => write(LAST_FILTERS_KEY, filters);
 
 export const getBookmarks = () => read(BOOKMARKS_KEY) || [];
 
-// Applied-jobs tracker: { [jobId]: appliedAtTimestamp }
+// Applied-jobs tracker: { [jobId]: { at, job } } — the whole job is kept so the
+// Applied tab can render it later, exactly like bookmarks. Entries written by
+// older builds are a bare timestamp; those stay marked (the value is still
+// truthy) but have no job to show in the tab.
 const APPLIED_KEY = 'jobsearch:applied';
 
 export const getApplied = () => read(APPLIED_KEY) || {};
 
-export function toggleApplied(jobId) {
+export function toggleApplied(job) {
   const map = getApplied();
-  if (map[jobId]) delete map[jobId];
-  else map[jobId] = Date.now();
+  if (map[job.id]) delete map[job.id];
+  else map[job.id] = { at: Date.now(), job };
   write(APPLIED_KEY, map);
   return { ...map };
+}
+
+// Applied jobs, newest first. Legacy timestamp-only entries are skipped.
+export function getAppliedJobs(map = getApplied()) {
+  return Object.values(map)
+    .filter((v) => v && typeof v === 'object' && v.job)
+    .sort((a, b) => (b.at || 0) - (a.at || 0))
+    .map((v) => v.job);
 }
 
 // View preference (not a search filter — it never affects the cache key).

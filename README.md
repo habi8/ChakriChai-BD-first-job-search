@@ -34,11 +34,19 @@ ATS platforms with clean server-rendered markup — one parser covers every comp
 there) and `generic` (heuristic link scraping, requiring both a job-title-shaped link
 text and a posting-shaped URL). Add companies by appending to the `COMPANIES` registry.
 
-Coverage is inherently uneven and that's expected: some employers render openings with
-JavaScript (invisible to an HTML scraper), some have no current openings, and some block
-automated requests. All three look like "0 jobs" — the source is additive and never fails
-the search. Verified working Aug 2026: Brain Station 23 (16 jobs), Dynamic Solution
-Innovators (4).
+The `generic` parser runs two passes: links to a posting (taking the title from a heading
+*inside* the link, since anchors usually wrap title + location + "Apply"), then — only if
+that finds nothing — job-title-shaped text with no per-job link (Wix-style pages), where
+Apply points at the careers page itself. The text pass is deliberately stricter: two or
+more words ending in a role noun, and skipped entirely on pages that say they have no
+openings. Without those guards, capability headings like "DevOps" or "QA and Test
+Automation" scrape as if they were vacancies.
+
+Coverage is uneven and that's expected. On any given day most of these companies simply
+aren't hiring, and "no openings" looks identical to a scrape failure unless you check —
+so diagnose before assuming a bug. As of Aug 2026: 27 openings across Brain Station 23
+(16), Dynamic Solution Innovators (4), Cefalo (3), Kaz Software (2) and Therap (2); the
+other 15 genuinely list nothing. The source is additive and never fails a search.
 
 **Bdjobs caveat:** `server/src/sources/bdjobs.js` calls the same internal endpoints
 the bdjobs.com web app uses (`api.bdjobs.com/Jobs/api/JobSearch/GetJobSearch` for

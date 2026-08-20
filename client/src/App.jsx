@@ -13,6 +13,7 @@ import {
   toggleBookmark,
   getApplied,
   toggleApplied,
+  getAppliedJobs,
   getShowApplied,
   setShowApplied,
 } from './lib/storage.js';
@@ -51,7 +52,7 @@ export default function App() {
   const [bookmarks, setBookmarks] = useState(() => getBookmarks());
   const [applied, setApplied] = useState(() => getApplied());
   const [showApplied, setShowAppliedState] = useState(() => getShowApplied());
-  const [view, setView] = useState('search'); // 'search' | 'saved' | 'top'
+  const [view, setView] = useState('search'); // 'search' | 'saved' | 'applied' | 'top'
   const [searched, setSearched] = useState(false);
   const [filterOptions, setFilterOptions] = useState(null); // { fieldGroups, roles }
 
@@ -111,7 +112,7 @@ export default function App() {
   }
 
   const onBookmark = (job) => setBookmarks([...toggleBookmark(job)]);
-  const onApplied = (job) => setApplied(toggleApplied(job.id));
+  const onApplied = (job) => setApplied(toggleApplied(job));
 
   const onToggleShowApplied = (value) => {
     setShowAppliedState(value);
@@ -124,8 +125,13 @@ export default function App() {
   const jobs = showApplied ? allJobs : allJobs.filter((j) => !applied[j.id]);
   const hiddenCount = allJobs.length - jobs.length;
   const visibleJobs = jobs.slice(0, visibleCount);
-  const savedList = showApplied ? bookmarks : bookmarks.filter((j) => !applied[j.id]);
+  // The Saved and Applied tabs always list everything in them. "Show applied"
+  // filters search results only — applying it to these tabs made the tab count
+  // disagree with an empty list (saved job that was also marked applied).
+  const savedList = bookmarks;
   const shownList = view === 'saved' ? savedList : visibleJobs;
+  const appliedJobs = getAppliedJobs(applied);
+  const legacyAppliedCount = Object.keys(applied).length - appliedJobs.length;
 
   return (
     <div className="app">
@@ -143,6 +149,9 @@ export default function App() {
             </button>
             <button className={view === 'saved' ? 'active' : ''} onClick={() => setView('saved')}>
               Saved{bookmarks.length ? ` (${bookmarks.length})` : ''}
+            </button>
+            <button className={view === 'applied' ? 'active' : ''} onClick={() => setView('applied')}>
+              Applied{appliedJobs.length ? ` (${appliedJobs.length})` : ''}
             </button>
           </nav>
         </div>
@@ -289,15 +298,52 @@ export default function App() {
           />
         )}
 
+        {view === 'applied' &&
+          (appliedJobs.length === 0 ? (
+            <div className="state-box empty-box">
+              <h2>No applied jobs yet</h2>
+              <p>
+                Hit <strong>Mark applied</strong> on any job card after you apply, and it will
+                be listed here (stored in this browser only).
+              </p>
+              {legacyAppliedCount > 0 && (
+                <p className="applied-legacy-note">
+                  {legacyAppliedCount} job{legacyAppliedCount === 1 ? '' : 's'} you marked
+                  before this tab existed {legacyAppliedCount === 1 ? 'is' : 'are'} still
+                  marked in search results, but {legacyAppliedCount === 1 ? 'wasn’t' : 'weren’t'}{' '}
+                  saved in full so {legacyAppliedCount === 1 ? 'it can’t' : 'they can’t'} be
+                  shown here.
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="result-count">
+                {appliedJobs.length} job{appliedJobs.length === 1 ? '' : 's'} you've applied to
+                {legacyAppliedCount > 0 && ` · ${legacyAppliedCount} older mark${legacyAppliedCount === 1 ? '' : 's'} without saved details`}
+              </div>
+              <div className="job-grid">
+                {appliedJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    expanded={expandedId === job.id}
+                    onToggle={() => setExpandedId(expandedId === job.id ? null : job.id)}
+                    bookmarked={bookmarkedIds.has(job.id)}
+                    onBookmark={onBookmark}
+                    applied={true}
+                    onApplied={onApplied}
+                  />
+                ))}
+              </div>
+            </>
+          ))}
+
         {view === 'saved' &&
           (savedList.length === 0 ? (
             <div className="state-box empty-box">
-              <h2>{bookmarks.length ? 'All saved jobs are marked applied' : 'No saved jobs yet'}</h2>
-              <p>
-                {bookmarks.length
-                  ? 'Turn “Show applied” back on in the search tab to see them.'
-                  : 'Hit the ☆ on any job card to keep it here (stored in this browser only).'}
-              </p>
+              <h2>No saved jobs yet</h2>
+              <p>Hit the ☆ on any job card to keep it here (stored in this browser only).</p>
             </div>
           ) : (
             <div className="job-grid">
