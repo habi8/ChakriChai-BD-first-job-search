@@ -27,7 +27,20 @@ export const EMPTY_FILTERS = {
   salaryMax: '',
 };
 
-export default function SearchForm({ filters, onChange, onSearch, loading, fieldGroups, roleGroups, levelOptions, fieldRoles, locationGroups }) {
+export default function SearchForm({
+  filters,
+  onChange,
+  onSearch,
+  loading,
+  fieldGroups,
+  roleGroups,
+  levelOptions,
+  fieldRoles,
+  locationGroups,
+  showApplied,
+  onToggleShowApplied,
+  appliedCount,
+}) {
   const set = (patch) => onChange({ ...filters, ...patch });
 
   // The Role dropdown adapts to the selected fields: a "Suggested" group of
@@ -181,6 +194,21 @@ export default function SearchForm({ filters, onChange, onSearch, loading, field
             onClick={() => onChange({ ...EMPTY_FILTERS })}
           >
             Clear
+          </button>
+          {/* View toggle, not a search filter — hides applied jobs from the
+              results already on screen without re-running the search. */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showApplied}
+            className={`toggle-applied ${showApplied ? 'on' : ''}`}
+            onClick={() => onToggleShowApplied(!showApplied)}
+            title={showApplied ? 'Hide jobs you have applied to' : 'Show jobs you have applied to'}
+          >
+            <span className="toggle-track">
+              <span className="toggle-knob" />
+            </span>
+            <span>Show applied{appliedCount ? ` (${appliedCount})` : ''}</span>
           </button>
         </div>
       </div>

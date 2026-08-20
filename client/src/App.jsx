@@ -10,6 +10,10 @@ import {
   setLastFilters,
   getBookmarks,
   toggleBookmark,
+  getApplied,
+  toggleApplied,
+  getShowApplied,
+  setShowApplied,
 } from './lib/storage.js';
 
 const PAGE_SIZE = 12;
@@ -44,6 +48,8 @@ export default function App() {
   const [expandedId, setExpandedId] = useState(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [bookmarks, setBookmarks] = useState(() => getBookmarks());
+  const [applied, setApplied] = useState(() => getApplied());
+  const [showApplied, setShowAppliedState] = useState(() => getShowApplied());
   const [view, setView] = useState('search'); // 'search' | 'saved'
   const [searched, setSearched] = useState(false);
   const [filterOptions, setFilterOptions] = useState(null); // { fieldGroups, roles }
@@ -104,10 +110,21 @@ export default function App() {
   }
 
   const onBookmark = (job) => setBookmarks([...toggleBookmark(job)]);
+  const onApplied = (job) => setApplied(toggleApplied(job.id));
 
-  const jobs = results?.jobs || [];
+  const onToggleShowApplied = (value) => {
+    setShowAppliedState(value);
+    setShowApplied(value);
+  };
+
+  // "Show applied" is a view filter over results already fetched — no refetch,
+  // and the cached payload keeps every job so toggling back is instant.
+  const allJobs = results?.jobs || [];
+  const jobs = showApplied ? allJobs : allJobs.filter((j) => !applied[j.id]);
+  const hiddenCount = allJobs.length - jobs.length;
   const visibleJobs = jobs.slice(0, visibleCount);
-  const shownList = view === 'saved' ? bookmarks : visibleJobs;
+  const savedList = showApplied ? bookmarks : bookmarks.filter((j) => !applied[j.id]);
+  const shownList = view === 'saved' ? savedList : visibleJobs;
 
   return (
     <div className="app">
@@ -143,6 +160,9 @@ export default function App() {
               levelOptions={filterOptions?.levels}
               fieldRoles={filterOptions?.fieldRoles}
               locationGroups={filterOptions?.locationGroups}
+              showApplied={showApplied}
+              onToggleShowApplied={onToggleShowApplied}
+              appliedCount={Object.keys(applied).length}
             />
 
             {cachedAt && !loading && (
@@ -179,7 +199,17 @@ export default function App() {
               </div>
             )}
 
-            {!loading && !error && searched && results && jobs.length === 0 && (
+            {!loading && !error && searched && results && jobs.length === 0 && allJobs.length > 0 && (
+              <div className="state-box empty-box">
+                <h2>You've applied to all {allJobs.length} matching jobs</h2>
+                <p>
+                  Turn <strong>Show applied</strong> back on above to see them, or broaden your
+                  filters for new results.
+                </p>
+              </div>
+            )}
+
+            {!loading && !error && searched && results && allJobs.length === 0 && (
               <div className="state-box empty-box">
                 <h2>No jobs matched your filters</h2>
                 <p>Try broadening the search:</p>
@@ -207,7 +237,8 @@ export default function App() {
               <>
                 <div className="result-count">
                   {results.total} matching job{results.total === 1 ? '' : 's'}
-                  {results.truncated ? ` (showing top ${jobs.length})` : ''}
+                  {results.truncated ? ` (showing top ${allJobs.length})` : ''}
+                  {hiddenCount > 0 && ` · ${hiddenCount} applied hidden`}
                 </div>
                 <div className="job-grid">
                   {shownList.map((job) => (
@@ -218,6 +249,8 @@ export default function App() {
                       onToggle={() => setExpandedId(expandedId === job.id ? null : job.id)}
                       bookmarked={bookmarkedIds.has(job.id)}
                       onBookmark={onBookmark}
+                      applied={Boolean(applied[job.id])}
+                      onApplied={onApplied}
                     />
                   ))}
                 </div>
@@ -234,14 +267,18 @@ export default function App() {
         )}
 
         {view === 'saved' &&
-          (bookmarks.length === 0 ? (
+          (savedList.length === 0 ? (
             <div className="state-box empty-box">
-              <h2>No saved jobs yet</h2>
-              <p>Hit the ☆ on any job card to keep it here (stored in this browser only).</p>
+              <h2>{bookmarks.length ? 'All saved jobs are marked applied' : 'No saved jobs yet'}</h2>
+              <p>
+                {bookmarks.length
+                  ? 'Turn “Show applied” back on in the search tab to see them.'
+                  : 'Hit the ☆ on any job card to keep it here (stored in this browser only).'}
+              </p>
             </div>
           ) : (
             <div className="job-grid">
-              {bookmarks.map((job) => (
+              {savedList.map((job) => (
                 <JobCard
                   key={job.id}
                   job={job}
@@ -249,6 +286,8 @@ export default function App() {
                   onToggle={() => setExpandedId(expandedId === job.id ? null : job.id)}
                   bookmarked={true}
                   onBookmark={onBookmark}
+                  applied={Boolean(applied[job.id])}
+                  onApplied={onApplied}
                 />
               ))}
             </div>

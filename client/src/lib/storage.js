@@ -82,6 +82,25 @@ export const setLastFilters = (filters) => write(LAST_FILTERS_KEY, filters);
 
 export const getBookmarks = () => read(BOOKMARKS_KEY) || [];
 
+// Applied-jobs tracker: { [jobId]: appliedAtTimestamp }
+const APPLIED_KEY = 'jobsearch:applied';
+
+export const getApplied = () => read(APPLIED_KEY) || {};
+
+export function toggleApplied(jobId) {
+  const map = getApplied();
+  if (map[jobId]) delete map[jobId];
+  else map[jobId] = Date.now();
+  write(APPLIED_KEY, map);
+  return { ...map };
+}
+
+// View preference (not a search filter — it never affects the cache key).
+const SHOW_APPLIED_KEY = 'jobsearch:showApplied';
+
+export const getShowApplied = () => read(SHOW_APPLIED_KEY) !== false;
+export const setShowApplied = (value) => write(SHOW_APPLIED_KEY, Boolean(value));
+
 export function toggleBookmark(job) {
   const list = getBookmarks();
   const idx = list.findIndex((j) => j.id === job.id);

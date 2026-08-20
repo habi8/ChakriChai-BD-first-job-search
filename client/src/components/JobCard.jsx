@@ -7,7 +7,7 @@ const TIER_CLASS = { 4: 'tier-bd', 3: 'tier-open', 2: 'tier-remote', 1: 'tier-lo
 // apply URL > company website > CV email) over the job board. Greenhouse and
 // Lever links already ARE the company's hosted careers page. The original
 // posting always stays reachable as a reference link.
-function ApplyActions({ job, detail, careers, onCollapse, bookmarked, onBookmark }) {
+function ApplyActions({ job, detail, careers, onCollapse, bookmarked, onBookmark, applied, onApplied }) {
   const stop = (e) => e.stopPropagation();
   const d = detail || {};
   const c = careers || {};
@@ -57,6 +57,16 @@ function ApplyActions({ job, detail, careers, onCollapse, bookmarked, onBookmark
       )}
       <button
         type="button"
+        className={`btn-ghost btn-applied-lg ${applied ? 'active' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onApplied(job);
+        }}
+      >
+        {applied ? '✓ Applied' : 'Mark as applied'}
+      </button>
+      <button
+        type="button"
         className={`btn-ghost btn-save ${bookmarked ? 'saved' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
@@ -81,7 +91,7 @@ const SOURCE_LABEL = {
   adzuna: 'Adzuna',
 };
 
-export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmark }) {
+export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmark, applied, onApplied }) {
   // detail: { html, company_website?, apply_email?, apply_url_direct? }
   const [detail, setDetail] = useState(
     job.full_description_html ? { html: job.full_description_html } : null
@@ -156,8 +166,11 @@ export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmar
         aria-expanded={expanded}
       >
         <div className="card-top">
-          <span className={`tier-badge ${TIER_CLASS[job.location_tier] || 'tier-other'}`}>
-            {job.location_tier_label || (job.remote ? 'Remote' : 'On-site')}
+          <span className="card-top-badges">
+            <span className={`tier-badge ${TIER_CLASS[job.location_tier] || 'tier-other'}`}>
+              {job.location_tier_label || (job.remote ? 'Remote' : 'On-site')}
+            </span>
+            {applied && <span className="applied-chip">✓ Applied</span>}
           </span>
           <div className="card-top-actions">
             <button
@@ -199,8 +212,21 @@ export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmar
           {job.salary && <span className="chip chip-salary">{job.salary}</span>}
         </div>
         {!expanded && job.snippet && <p className="snippet">{job.snippet}</p>}
-        <div className="card-source">
-          from <strong>{SOURCE_LABEL[job.source] || job.source}</strong>
+        <div className="card-foot">
+          <span className="card-source">
+            from <strong>{SOURCE_LABEL[job.source] || job.source}</strong>
+          </span>
+          <button
+            type="button"
+            className={`btn-applied ${applied ? 'active' : ''}`}
+            title={applied ? 'Unmark as applied' : 'Mark this job as applied'}
+            onClick={(e) => {
+              e.stopPropagation();
+              onApplied(job);
+            }}
+          >
+            {applied ? '✓ Applied' : 'Mark applied'}
+          </button>
         </div>
       </div>
 
@@ -225,6 +251,8 @@ export default function JobCard({ job, expanded, onToggle, bookmarked, onBookmar
             onCollapse={handleToggle}
             bookmarked={bookmarked}
             onBookmark={onBookmark}
+            applied={applied}
+            onApplied={onApplied}
           />
         </div>
       )}
