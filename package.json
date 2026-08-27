@@ -4,10 +4,13 @@
   "private": true,
   "description": "BD-first job search aggregator — stateless Node/Express API + React client, localStorage persistence only.",
   "scripts": {
-    "install:all": "npm --prefix server install && npm --prefix client install",
+    "install:all": "npm --prefix server install --omit=dev && npm --prefix client install --include=dev",
     "build": "npm --prefix client run build",
     "start": "npm --prefix server run start",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
